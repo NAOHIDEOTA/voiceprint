@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>voiceprint - Demo</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080a0c;
+      --surface: #0d1114;
+      --surface-2: #11171b;
+      --surface-3: #151d22;
+      --line: #243036;
+      --line-strong: #38505a;
+      --text: #edf3f4;
+      --muted: #8fa0a6;
+      --subtle: #627176;
+      --accent: #23d3a6;
+      --accent-2: #62e6c3;
+      --cyan: #52c7df;
+      --warn: #e2b94f;
+      --danger: #f36b5f;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background:
+        linear-gradient(180deg, rgba(19, 30, 33, 0.72) 0, rgba(8, 10, 12, 0) 360px),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 88px),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      letter-spacing: 0;
+    }
+
+    .container { max-width: 1180px; margin: 0 auto; padding: 32px 20px 40px; }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 22px;
+      padding: 8px 0 18px;
+      border-bottom: 1px solid rgba(98, 230, 195, 0.16);
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 4.75rem);
+      line-height: 0.9;
+      font-weight: 740;
+      letter-spacing: 0;
+      color: var(--text);
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 0.98rem;
+      margin-top: 12px;
+      max-width: 640px;
+    }
+
+    .badges {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      max-width: 360px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 650;
+      text-transform: uppercase;
+      color: #b8c7cb;
+      background: rgba(17, 23, 27, 0.78);
+      border: 1px solid var(--line);
+    }
+
+    .notices {
+      margin: 0 0 18px;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 10px;
+    }
+    .notice {
+      min-height: 74px;
+      font-size: 0.77rem;
+      line-height: 1.55;
+      color: #bbc9cc;
+      background: rgba(13, 17, 20, 0.84);
+      border: 1px solid var(--line);
+      border-top: 2px solid var(--warn);
+      border-radius: 6px;
+      padding: 12px 13px;
+    }
+    .notice.safe { border-top-color: var(--accent); }
+
+    .card {
+      background: rgba(13, 17, 20, 0.92);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .card h2 {
+      font-size: 0.86rem;
+      margin-bottom: 14px;
+      color: #dbe7e9;
+      font-weight: 680;
+      text-transform: uppercase;
+    }
+    .card h3 {
+      font-size: 0.74rem;
+      margin: 15px 0 7px;
+      color: var(--muted);
+      font-weight: 680;
+      text-transform: uppercase;
+    }
+
+    /* モデル選択 */
+    .model-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .model-option {
+      cursor: pointer;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      padding: 13px 14px;
+      background: linear-gradient(180deg, rgba(21, 29, 34, 0.9), rgba(10, 13, 15, 0.92));
+      transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    }
+    .model-option:hover { border-color: var(--line-strong); transform: translateY(-1px); }
+    .model-option.selected {
+      border-color: rgba(35, 211, 166, 0.82);
+      background: linear-gradient(180deg, rgba(22, 42, 40, 0.9), rgba(12, 18, 18, 0.96));
+    }
+    .model-option .name { font-weight: 740; font-size: 1rem; color: #f3faf9; }
+    .model-option .size { color: var(--muted); font-size: 0.76rem; line-height: 1.45; margin-top: 6px; }
+    .model-status { margin-top: 11px; font-size: 0.78rem; color: var(--muted); min-height: 1.2em; }
+
+    /* パネル */
+    .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .panels > div {
+      border: 1px solid rgba(36, 48, 54, 0.86);
+      border-radius: 5px;
+      background: rgba(8, 10, 12, 0.46);
+      padding: 14px;
+    }
+
+    .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      min-height: 34px;
+      background: #172025;
+      color: #d9e5e7;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 8px 13px;
+      font-size: 0.8rem;
+      font-weight: 680;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    button:hover:not(:disabled) { background: #202c32; border-color: var(--line-strong); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+    button.primary {
+      background: #0f3f37;
+      border-color: rgba(35, 211, 166, 0.46);
+      color: #e9fffa;
+    }
+    button.primary:hover:not(:disabled) { background: #135448; border-color: var(--accent); }
+    button.recording {
+      background: #51211f;
+      border-color: rgba(243, 107, 95, 0.62);
+      color: #fff2f0;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse { 50% { opacity: 0.6; } }
+
+    input[type="file"] { display: none; }
+
+    .status { font-size: 0.78rem; color: var(--muted); margin-top: 10px; min-height: 1.2em; }
+    .status.error { color: var(--danger); }
+    .status.ok { color: var(--accent-2); }
+
+    canvas {
+      width: 100%;
+      border-radius: 4px;
+      background: #050708;
+      border: 1px solid var(--line);
+      image-rendering: pixelated;
+      display: block;
+    }
+    canvas.spectrogram { height: 126px; }
+    canvas.heatmap { height: 148px; }
+
+    .quality { font-size: 0.76rem; color: var(--muted); line-height: 1.65; min-height: 4.8em; }
+    .quality .warn { color: var(--warn); }
+
+    /* 比較 */
+    .compare-score { text-align: left; margin: 4px 0 12px; }
+    .score-value {
+      font-size: clamp(2rem, 7vw, 4.25rem);
+      line-height: 0.95;
+      font-weight: 760;
+      font-variant-numeric: tabular-nums;
+      color: #f5fbfb;
+    }
+    .score-label { font-size: 0.72rem; color: var(--subtle); text-transform: uppercase; margin-top: 5px; }
+    .score-bar-wrap {
+      position: relative;
+      height: 16px;
+      background: #050708;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      margin: 10px 0 8px;
+    }
+    .score-bar {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #2e7d8d, var(--accent));
+      transition: width 0.3s;
+    }
+    .threshold-marker {
+      position: absolute; top: 0; bottom: 0; width: 2px; background: var(--warn);
+    }
+    .verdict {
+      font-size: 0.92rem;
+      font-weight: 700;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--line);
+      background: rgba(8, 10, 12, 0.58);
+    }
+    .verdict.same { color: var(--accent-2); border-color: rgba(35, 211, 166, 0.38); }
+    .verdict.diff { color: #ff9b91; border-color: rgba(243, 107, 95, 0.36); }
+    .verdict.none { color: var(--subtle); font-size: 0.86rem; font-weight: 560; }
+
+    .threshold-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+    .threshold-row label { font-size: 0.74rem; color: var(--muted); white-space: nowrap; text-transform: uppercase; }
+    input[type="range"] { flex: 1 1 180px; accent-color: var(--accent); }
+    .threshold-value { font-variant-numeric: tabular-nums; font-size: 0.86rem; width: 3.2em; color: #dce8ea; }
+    .mode-buttons { display: flex; gap: 6px; }
+    .mode-buttons button { padding: 5px 10px; font-size: 0.72rem; min-height: 29px; }
+    .mode-buttons button.active {
+      background: #0f3f37;
+      border-color: rgba(35, 211, 166, 0.56);
+      color: #e9fffa;
+    }
+
+    footer { text-align: center; color: var(--subtle); font-size: 0.76rem; margin-top: 30px; }
+    footer a { color: var(--cyan); text-decoration: none; }
+
+    @media (max-width: 820px) {
+      header { grid-template-columns: 1fr; align-items: start; }
+      .badges { justify-content: flex-start; max-width: none; }
+      .notices { grid-template-columns: 1fr; }
+      .panels { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .container { padding: 22px 12px 32px; }
+      .card { padding: 14px; }
+      .model-grid { grid-template-columns: 1fr; }
+      .controls button { flex: 1 1 calc(50% - 8px); }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "onnxruntime-web": "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.min.mjs"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>voiceprint</h1>
+      <p>ブラウザ完結の声紋抽出・比較デモ (Rust/WASM + ONNX Runtime Web)</p>
+      <div class="badges">
+        <span class="badge">Local only</span>
+        <span class="badge">WASM</span>
+        <span class="badge">ONNX</span>
+        <span class="badge">Speaker ID</span>
+      </div>
+    </header>
+
+    <div class="notices">
+      <div class="notice safe">このデモはブラウザ内で音声処理を行います。音声データおよび声紋データは外部サーバーへ送信されません。</div>
+      <div class="notice">声紋ベクトルの可視化は説明用であり、人間が見て本人一致を判断するためのものではありません。実際の比較には similarity score を使用してください。</div>
+      <div class="notice">声紋認証をログイン、決済、重要操作の単独認証に使うことは推奨されません。</div>
+    </div>
+
+    <div class="card">
+      <h2>1. モデルを選択</h2>
+      <div class="model-grid" id="modelGrid"></div>
+      <div class="model-status" id="modelStatus">モデルは初回抽出時にダウンロードされ、ブラウザにキャッシュされます。</div>
+    </div>
+
+    <div class="card">
+      <h2>2. 音声を録音 / アップロード (推奨 5〜10秒)</h2>
+      <div class="panels">
+        <div>
+          <h3>話者 A</h3>
+          <div class="controls">
+            <button class="primary" data-panel="A" data-action="record">録音</button>
+            <button data-panel="A" data-action="upload">ファイル</button>
+            <button data-panel="A" data-action="download" disabled>JSON保存</button>
+            <button data-panel="A" data-action="import">読込</button>
+          </div>
+          <input type="file" data-panel="A" data-input="audio" accept="audio/*">
+          <input type="file" data-panel="A" data-input="json" accept=".json,application/json">
+          <div class="status" data-panel="A" data-el="status"></div>
+          <h3>スペクトログラム</h3>
+          <canvas class="spectrogram" data-panel="A" data-el="spectrogram" width="400" height="80"></canvas>
+          <h3>声紋ベクトルヒートマップ</h3>
+          <canvas class="heatmap" data-panel="A" data-el="heatmap" width="16" height="12"></canvas>
+          <h3>品質</h3>
+          <div class="quality" data-panel="A" data-el="quality">—</div>
+        </div>
+        <div>
+          <h3>話者 B</h3>
+          <div class="controls">
+            <button class="primary" data-panel="B" data-action="record">録音</button>
+            <button data-panel="B" data-action="upload">ファイル</button>
+            <button data-panel="B" data-action="download" disabled>JSON保存</button>
+            <button data-panel="B" data-action="import">読込</button>
+          </div>
+          <input type="file" data-panel="B" data-input="audio" accept="audio/*">
+          <input type="file" data-panel="B" data-input="json" accept=".json,application/json">
+          <div class="status" data-panel="B" data-el="status"></div>
+          <h3>スペクトログラム</h3>
+          <canvas class="spectrogram" data-panel="B" data-el="spectrogram" width="400" height="80"></canvas>
+          <h3>声紋ベクトルヒートマップ</h3>
+          <canvas class="heatmap" data-panel="B" data-el="heatmap" width="16" height="12"></canvas>
+          <h3>品質</h3>
+          <div class="quality" data-panel="B" data-el="quality">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>3. 比較</h2>
+      <div class="compare-score">
+        <div class="score-value" id="scoreValue">—</div>
+        <div class="score-label">cosine similarity</div>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar" id="scoreBar"></div>
+        <div class="threshold-marker" id="thresholdMarker"></div>
+      </div>
+      <div class="verdict none" id="verdict">A と B の両方の声紋を抽出すると比較結果が表示されます</div>
+      <div class="threshold-row">
+        <label>threshold</label>
+        <input type="range" id="thresholdSlider" min="0.10" max="0.90" step="0.01" value="0.45">
+        <span class="threshold-value" id="thresholdValue">0.45</span>
+        <div class="mode-buttons" id="modeButtons">
+          <button data-mode="loose">loose</button>
+          <button data-mode="normal" class="active">normal</button>
+          <button data-mode="strict">strict</button>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <a href="https://github.com/NAOHIDEOTA/voiceprint">GitHub</a> ·
+      MIT License · モデル: 3D-Speaker (Apache-2.0)
+    </footer>
+  </div>
+
+  <script type="module">
+    import {
+      extractVoiceprint,
+      compareVoiceprints,
+      voiceprintToJson,
+      voiceprintFromJson,
+      THRESHOLDS,
+      MODELS,
+      preloadModel,
+    } from '../dist/index.js';
+
+    // ローカル開発時 (make demo) は models/ を直接参照。
+    // GitHub Pages では GitHub Releases (DEFAULT_MODEL_BASE_URL) から取得。
+    // ?models=<url> で任意の配布先に上書き可能。
+    const params = new URLSearchParams(location.search);
+    const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
+    const modelBaseUrl = params.get('models') ?? (isLocal ? new URL('../models', location.href).href : undefined);
+
+    const state = {
+      model: 'base',
+      threshold: 0.45,
+      panels: {
+        A: { voiceprint: null, quality: null, audio: null, recorder: null, chunks: [] },
+        B: { voiceprint: null, quality: null, audio: null, recorder: null, chunks: [] },
+      },
+    };
+
+    // ---- モデル選択 UI ----
+    const modelGrid = document.getElementById('modelGrid');
+    const modelStatus = document.getElementById('modelStatus');
+    const MODEL_LABELS = {
+      small: { title: 'small', desc: 'CAM++ int8量子化' },
+      base: { title: 'base', desc: 'CAM++ バイリンガル (推奨)' },
+      large: { title: 'large', desc: 'ERes2NetV2' },
+    };
+    for (const size of ['small', 'base', 'large']) {
+      const info = MODELS[size];
+      const div = document.createElement('div');
+      div.className = 'model-option' + (size === state.model ? ' selected' : '');
+      div.dataset.size = size;
+      div.innerHTML = `
+        <div class="name">${MODEL_LABELS[size].title}</div>
+        <div class="size">${MODEL_LABELS[size].desc}<br>約${info.approxSizeMb}MB · ${info.dimension}次元</div>`;
+      div.addEventListener('click', () => selectModel(size));
+      modelGrid.appendChild(div);
+    }
+
+    async function selectModel(size) {
+      if (state.model === size) return;
+      state.model = size;
+      document.querySelectorAll('.model-option').forEach((el) => {
+        el.classList.toggle('selected', el.dataset.size === size);
+      });
+      // 保存済み音声があれば新モデルで再抽出 (モデル間の voiceprint は比較不可のため)
+      for (const key of ['A', 'B']) {
+        const p = state.panels[key];
+        p.voiceprint = null;
+        if (p.audio) {
+          await extract(key, p.audio);
+        } else {
+          setStatus(key, '');
+          clearVisuals(key);
+        }
+      }
+      updateCompare();
+    }
+
+    // ---- パネル操作 ----
+    const el = (panel, name) => document.querySelector(`[data-panel="${panel}"][data-el="${name}"]`);
+    const btn = (panel, action) => document.querySelector(`button[data-panel="${panel}"][data-action="${action}"]`);
+    const fileInput = (panel, kind) => document.querySelector(`input[data-panel="${panel}"][data-input="${kind}"]`);
+
+    function setStatus(panel, text, cls = '') {
+      const s = el(panel, 'status');
+      s.textContent = text;
+      s.className = 'status ' + cls;
+    }
+
+    function clearVisuals(panel) {
+      for (const name of ['spectrogram', 'heatmap']) {
+        const c = el(panel, name);
+        c.getContext('2d').clearRect(0, 0, c.width, c.height);
+      }
+      el(panel, 'quality').textContent = '—';
+      btn(panel, 'download').disabled = true;
+    }
+
+    // inferno 風の簡易カラーマップ
+    function colormap(v) {
+      const r = Math.min(255, Math.round(255 * Math.sqrt(v) * 1.3));
+      const g = Math.round(180 * v * v);
+      const b = Math.round(120 * (1 - v) * v * 4 * (1 - v) + 40 * v);
+      return [r, g, b];
+    }
+
+    function drawGrid(canvas, grid, transpose = false) {
+      if (!grid || grid.length === 0) return;
+      const rows = transpose ? grid[0].length : grid.length;
+      const cols = transpose ? grid.length : grid[0].length;
+      canvas.width = cols;
+      canvas.height = rows;
+      const ctx = canvas.getContext('2d');
+      const img = ctx.createImageData(cols, rows);
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          // スペクトログラムは低域を下に表示するため上下反転
+          const v = transpose ? grid[x][rows - 1 - y] : grid[y][x];
+          const [r, g, b] = colormap(Math.max(0, Math.min(1, v)));
+          const i = (y * cols + x) * 4;
+          img.data[i] = r; img.data[i + 1] = g; img.data[i + 2] = b; img.data[i + 3] = 255;
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+
+    function renderResult(panel, result) {
+      const { voiceprint, quality, visualization } = result;
+      state.panels[panel].voiceprint = voiceprint;
+      state.panels[panel].quality = quality;
+
+      // visualization.spectrogram: 時間 × 周波数 → transpose して描画
+      drawGrid(el(panel, 'spectrogram'), visualization?.spectrogram, true);
+      drawGrid(el(panel, 'heatmap'), visualization?.vectorHeatmap, false);
+
+      const q = quality;
+      const lines = [
+        `発話: ${(q.speechMs / 1000).toFixed(1)}s / 全体: ${(q.durationMs / 1000).toFixed(1)}s`,
+        `モデル: ${voiceprint.model} (${voiceprint.dimension}次元)`,
+        q.snrEstimate !== undefined ? `推定SNR: ${q.snrEstimate.toFixed(1)}dB` : null,
+        ...q.warnings.map((w) => `<span class="warn">注意: ${w}</span>`),
+      ].filter(Boolean);
+      el(panel, 'quality').innerHTML = lines.join('<br>');
+      btn(panel, 'download').disabled = false;
+      setStatus(panel, '抽出完了', 'ok');
+    }
+
+    async function extract(panel, audio) {
+      setStatus(panel, `抽出中... (初回はモデル約${MODELS[state.model].approxSizeMb}MBのダウンロードが入ります)`);
+      clearVisuals(panel);
+      state.panels[panel].voiceprint = null;
+      try {
+        const result = await extractVoiceprint(audio, {
+          model: state.model,
+          modelBaseUrl,
+          returnSpectrogram: true,
+        });
+        if (!result.ok) {
+          const messages = {
+            NO_SPEECH_DETECTED: '発話が検出できませんでした。マイクに向かって話してください。',
+            SPEECH_TOO_SHORT: '発話が短すぎます。3秒以上 (推奨5〜10秒) 話してください。',
+            AUDIO_DECODE_FAILED: '音声ファイルをデコードできませんでした。',
+            MODEL_LOAD_FAILED: 'モデルのロードに失敗しました。ネットワークを確認してください。',
+            INFERENCE_FAILED: '推論に失敗しました。',
+            UNSUPPORTED_BROWSER: 'このブラウザは対応していません。',
+          };
+          setStatus(panel, messages[result.code] ?? result.message, 'error');
+          return;
+        }
+        state.panels[panel].audio = audio;
+        renderResult(panel, result);
+      } catch (e) {
+        console.error(e);
+        setStatus(panel, `エラー: ${e.message ?? e}`, 'error');
+      }
+      updateCompare();
+    }
+
+    // 録音
+    async function toggleRecord(panel) {
+      const p = state.panels[panel];
+      const button = btn(panel, 'record');
+      if (p.recorder && p.recorder.state === 'recording') {
+        p.recorder.stop();
+        return;
+      }
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch {
+        setStatus(panel, 'マイクの使用が許可されませんでした。', 'error');
+        return;
+      }
+      p.chunks = [];
+      p.recorder = new MediaRecorder(stream);
+      p.recorder.ondataavailable = (e) => p.chunks.push(e.data);
+      p.recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        button.textContent = '録音';
+        button.classList.remove('recording');
+        const blob = new Blob(p.chunks, { type: p.recorder.mimeType });
+        await extract(panel, blob);
+      };
+      p.recorder.start();
+      button.textContent = '停止';
+      button.classList.add('recording');
+      setStatus(panel, '録音中... 5〜10秒話して停止を押してください');
+    }
+
+    // イベント配線
+    for (const panel of ['A', 'B']) {
+      btn(panel, 'record').addEventListener('click', () => toggleRecord(panel));
+      btn(panel, 'upload').addEventListener('click', () => fileInput(panel, 'audio').click());
+      btn(panel, 'import').addEventListener('click', () => fileInput(panel, 'json').click());
+      btn(panel, 'download').addEventListener('click', () => {
+        const vp = state.panels[panel].voiceprint;
+        if (!vp) return;
+        const blob = new Blob([JSON.stringify(voiceprintToJson(vp), null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `voiceprint-${panel}.json`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+      fileInput(panel, 'audio').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) await extract(panel, file);
+        e.target.value = '';
+      });
+      fileInput(panel, 'json').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+          const vp = voiceprintFromJson(JSON.parse(await file.text()));
+          state.panels[panel].voiceprint = vp;
+          state.panels[panel].audio = null;
+          clearVisuals(panel);
+          const { voiceprintToHeatmap } = await import('../dist/index.js');
+          drawGrid(el(panel, 'heatmap'), voiceprintToHeatmap(vp), false);
+          el(panel, 'quality').textContent = `インポート: ${vp.model} (${vp.dimension}次元, 発話${(vp.speechMs / 1000).toFixed(1)}s)`;
+          btn(panel, 'download').disabled = false;
+          setStatus(panel, 'JSON をインポートしました (スペクトログラムは音声が無いため表示されません)', 'ok');
+        } catch (err) {
+          setStatus(panel, `インポート失敗: ${err.message}`, 'error');
+        }
+        e.target.value = '';
+        updateCompare();
+      });
+    }
+
+    // ---- 比較 ----
+    const slider = document.getElementById('thresholdSlider');
+    const thresholdValue = document.getElementById('thresholdValue');
+    const modeButtons = document.getElementById('modeButtons');
+
+    slider.addEventListener('input', () => {
+      state.threshold = Number(slider.value);
+      thresholdValue.textContent = state.threshold.toFixed(2);
+      modeButtons.querySelectorAll('button').forEach((b) => b.classList.remove('active'));
+      updateCompare();
+    });
+    modeButtons.querySelectorAll('button').forEach((b) => {
+      b.addEventListener('click', () => {
+        state.threshold = THRESHOLDS[b.dataset.mode];
+        slider.value = state.threshold;
+        thresholdValue.textContent = state.threshold.toFixed(2);
+        modeButtons.querySelectorAll('button').forEach((x) => x.classList.toggle('active', x === b));
+        updateCompare();
+      });
+    });
+
+    function updateCompare() {
+      const { A, B } = state.panels;
+      const scoreValue = document.getElementById('scoreValue');
+      const scoreBar = document.getElementById('scoreBar');
+      const marker = document.getElementById('thresholdMarker');
+      const verdict = document.getElementById('verdict');
+
+      // threshold マーカー位置 (バーは 0..1 を表す)
+      marker.style.left = `${state.threshold * 100}%`;
+
+      if (!A.voiceprint || !B.voiceprint) {
+        scoreValue.textContent = '—';
+        scoreBar.style.width = '0';
+        verdict.className = 'verdict none';
+        verdict.textContent = 'A と B の両方の声紋を抽出すると比較結果が表示されます';
+        return;
+      }
+      let result;
+      try {
+        result = compareVoiceprints(A.voiceprint, B.voiceprint, { threshold: state.threshold });
+      } catch (e) {
+        verdict.className = 'verdict none';
+        verdict.textContent = `比較できません: ${e.message} (同じモデルで抽出し直してください)`;
+        scoreValue.textContent = '—';
+        scoreBar.style.width = '0';
+        return;
+      }
+      scoreValue.textContent = result.score.toFixed(4);
+      scoreBar.style.width = `${Math.max(0, Math.min(1, result.score)) * 100}%`;
+      verdict.className = 'verdict ' + (result.sameSpeaker ? 'same' : 'diff');
+      verdict.textContent = result.sameSpeaker
+        ? `同一話者の可能性が高い (confidence: ${result.confidence})`
+        : `別話者 / 不明 (confidence: ${result.confidence})`;
+    }
+
+    // base モデルを事前ロード (失敗しても抽出時に再試行される)
+    preloadModel(state.model, modelBaseUrl).then(
+      () => { modelStatus.textContent = `${state.model} モデル: ロード済み (キャッシュ)`; },
+      () => {},
+    );
+  </script>
+</body>
+</html>

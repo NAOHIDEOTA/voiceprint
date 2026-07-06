@@ -1,0 +1,54 @@
+{
+  "name": "voiceprint",
+  "version": "0.1.0",
+  "description": "WASM-powered client-side voiceprint (speaker embedding) extraction and comparison SDK. Runs entirely in the browser.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/",
+    "pkg/voiceprint_wasm_bg.wasm",
+    "pkg/voiceprint_wasm.js",
+    "pkg/voiceprint_wasm.d.ts",
+    "pkg/voiceprint_wasm_bg.wasm.d.ts"
+  ],
+  "scripts": {
+    "build:wasm": "wasm-pack build crates --target web --out-dir ../pkg && rm -f pkg/package.json pkg/.gitignore",
+    "build:ts": "tsc",
+    "build": "npm run build:wasm && npm run build:ts",
+    "prepublishOnly": "npm run build",
+    "test": "node tests/compare.mjs",
+    "test:rust": "cd crates && cargo test"
+  },
+  "keywords": [
+    "wasm",
+    "voiceprint",
+    "speaker-embedding",
+    "speaker-verification",
+    "speaker-recognition",
+    "onnx",
+    "audio"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NAOHIDEOTA/voiceprint.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NAOHIDEOTA/voiceprint/issues"
+  },
+  "homepage": "https://github.com/NAOHIDEOTA/voiceprint#readme",
+  "author": "NAOHIDEOTA",
+  "dependencies": {
+    "onnxruntime-web": "^1.22.0"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.2"
+  }
+}

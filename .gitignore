@@ -1,0 +1,5 @@
+/crates/target
+/node_modules
+/models
+.history
+sample.mp4
