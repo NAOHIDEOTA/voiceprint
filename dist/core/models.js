@@ -1,9 +1,13 @@
 const CACHE_NAME = 'voiceprint-models-v1';
 /**
- * 既定の配布先。GitHub Release アセット (3D-Speaker 由来の ONNX, Apache-2.0)。
+ * 既定の配布先。Hugging Face Hub (3D-Speaker 由来の ONNX, Apache-2.0)。
  * 利用側で modelBaseUrl を渡せば上書き可能。
+ *
+ * GitHub Releases は使えない。ブラウザからの取得はダウンロード URL が
+ * Access-Control-Allow-Origin なしの 302 を返すため CORS で必ず失敗する
+ * (リダイレクト先の release-assets.githubusercontent.com も ACAO を返さない)。
  */
-export const DEFAULT_MODEL_BASE_URL = 'https://github.com/NAOHIDEOTA/voiceprint/releases/download/models-v1';
+export const DEFAULT_MODEL_BASE_URL = 'https://huggingface.co/sollonao/voiceprint-models/resolve/main';
 /** 3D-Speaker 系 (normalize_samples=1 / global-mean CMN) の前処理設定 */
 const PREPROCESS_3DSPEAKER = { cmn: true, int16Scale: false };
 export const MODELS = {

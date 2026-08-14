@@ -5,10 +5,14 @@
 import type { InferenceSession } from 'onnxruntime-web';
 import type { ModelSize } from '../types.js';
 /**
- * 既定の配布先。GitHub Release アセット (3D-Speaker 由来の ONNX, Apache-2.0)。
+ * 既定の配布先。Hugging Face Hub (3D-Speaker 由来の ONNX, Apache-2.0)。
  * 利用側で modelBaseUrl を渡せば上書き可能。
+ *
+ * GitHub Releases は使えない。ブラウザからの取得はダウンロード URL が
+ * Access-Control-Allow-Origin なしの 302 を返すため CORS で必ず失敗する
+ * (リダイレクト先の release-assets.githubusercontent.com も ACAO を返さない)。
  */
-export declare const DEFAULT_MODEL_BASE_URL = "https://github.com/NAOHIDEOTA/voiceprint/releases/download/models-v1";
+export declare const DEFAULT_MODEL_BASE_URL = "https://huggingface.co/sollonao/voiceprint-models/resolve/main";
 export type ModelInfo = {
     file: string;
     /** 埋め込み次元 */
