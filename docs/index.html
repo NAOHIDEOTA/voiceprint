@@ -379,22 +379,26 @@
   </div>
 
   <script type="module">
-    import {
+    const isDocsPath = location.pathname.replace(/\/$/, '').endsWith('/docs');
+    const sdkBasePath = isDocsPath ? '../dist/index.js' : './dist/index.js';
+    const {
       extractVoiceprint,
       compareVoiceprints,
       voiceprintToJson,
       voiceprintFromJson,
+      voiceprintToHeatmap,
       THRESHOLDS,
       MODELS,
       preloadModel,
-    } from '../dist/index.js';
+    } = await import(sdkBasePath);
 
     // ローカル開発時 (make demo) は models/ を直接参照。
-    // GitHub Pages では GitHub Releases (DEFAULT_MODEL_BASE_URL) から取得。
+    // GitHub Pages では Hugging Face Hub (DEFAULT_MODEL_BASE_URL) から取得。
     // ?models=<url> で任意の配布先に上書き可能。
     const params = new URLSearchParams(location.search);
     const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
-    const modelBaseUrl = params.get('models') ?? (isLocal ? new URL('../models', location.href).href : undefined);
+    const localModelPath = isDocsPath ? '../models' : './models';
+    const modelBaseUrl = params.get('models') ?? (isLocal ? new URL(localModelPath, location.href).href : undefined);
 
     const state = {
       model: 'base',
@@ -604,7 +608,6 @@
           state.panels[panel].voiceprint = vp;
           state.panels[panel].audio = null;
           clearVisuals(panel);
-          const { voiceprintToHeatmap } = await import('../dist/index.js');
           drawGrid(el(panel, 'heatmap'), voiceprintToHeatmap(vp), false);
           el(panel, 'quality').textContent = `インポート: ${vp.model} (${vp.dimension}次元, 発話${(vp.speechMs / 1000).toFixed(1)}s)`;
           btn(panel, 'download').disabled = false;

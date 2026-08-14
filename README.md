@@ -8,7 +8,7 @@
 
 サーバーに音声を送らず、**ブラウザ上だけで** 録音・前処理・speaker embedding 抽出・cosine similarity 比較まで実行します。
 
-**[Live Demo](https://naohideota.github.io/voiceprint/docs/)**
+**[Live Demo](https://naohideota.github.io/voiceprint/)**
 
 ![Demo](docs/assets/demo.gif)
 
@@ -61,7 +61,7 @@ if (a.ok && b.ok) {
 
 ## Models
 
-[3D-Speaker](https://github.com/modelscope/3D-Speaker) (Apache-2.0) 由来の ONNX モデルを GitHub Releases から取得し、Cache Storage にキャッシュします。
+[3D-Speaker](https://github.com/modelscope/3D-Speaker) (Apache-2.0) 由来の ONNX モデルを [Hugging Face Hub](https://huggingface.co/sollonao/voiceprint-models) から取得し、Cache Storage にキャッシュします。
 
 | size | Model | Download | Dim | Use case |
 |---|---|---:|---:|---|
@@ -160,11 +160,15 @@ docker exec voiceprint node tests/inference.mjs [small|base|large]
 
 ### Model Release
 
-生成した `models/*.onnx` を GitHub Releases (`models-v1`) にアップロードします。
+生成した `models/*.onnx` を [Hugging Face Hub](https://huggingface.co/sollonao/voiceprint-models) にアップロードします。
 
 ```bash
-make release-models
+make release-models   # 要 hf CLI: pip install huggingface_hub && hf auth login
 ```
+
+Web UI からのドラッグ＆ドロップでも同じです。
+
+> **GitHub Releases は使えません。** ダウンロード URL が `Access-Control-Allow-Origin` を持たない 302 を返し、リダイレクト先の `release-assets.githubusercontent.com` も同ヘッダを返さないため、ブラウザからの `fetch` は CORS で必ず失敗します。配布先を変更する場合は、実際にブラウザから取得できるか確認してください。
 
 ## Architecture
 

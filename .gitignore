@@ -3,3 +3,5 @@
 /models
 .history
 sample.mp4
+/docs/dist
+/docs/pkg

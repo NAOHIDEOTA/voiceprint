@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # ONNX モデルを取得し、small (int8量子化) を生成して models/ に配置する。
 # 出力ファイル名は src/core/models.ts の MODELS と一致させること。
-# 生成物は GitHub Releases (tag: models-v1) にアップロードして配布する。
+# 生成物は Hugging Face Hub (sollonao/voiceprint-models) にアップロードして配布する。
+# GitHub Releases は CORS 非対応のためブラウザから取得できない (src/core/models.ts 参照)。
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
