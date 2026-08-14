@@ -8,7 +8,7 @@
 
 サーバーに音声を送らず、**ブラウザ上だけで** 録音・前処理・speaker embedding 抽出・cosine similarity 比較まで実行します。
 
-**[Live Demo](https://naohideota.github.io/voiceprint/)**
+**[Live Demo](https://naohideota.github.io/voiceprint/docs/)**
 
 ![Demo](docs/assets/demo.gif)
 
