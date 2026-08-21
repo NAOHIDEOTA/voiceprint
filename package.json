@@ -38,13 +38,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NAOHIDEOTA/voiceprint.git"
+    "url": "git+https://github.com/naohidden/voiceprint.git"
   },
   "bugs": {
-    "url": "https://github.com/NAOHIDEOTA/voiceprint/issues"
+    "url": "https://github.com/naohidden/voiceprint/issues"
   },
-  "homepage": "https://github.com/NAOHIDEOTA/voiceprint#readme",
-  "author": "NAOHIDEOTA",
+  "homepage": "https://github.com/naohidden/voiceprint#readme",
+  "author": "naohidden",
   "dependencies": {
     "onnxruntime-web": "^1.22.0"
   },
